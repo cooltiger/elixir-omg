@@ -117,10 +117,21 @@ defmodule OMG.Eth.RootChain do
   end
 
   def create_new(path_project_root, addr, opts \\ []) do
-    opts = @tx_defaults |> Keyword.merge(opts)
+    defaults = @tx_defaults |> Keyword.put(:gas, 6_180_000)
+    opts = defaults |> Keyword.merge(opts)
 
     bytecode = Eth.get_bytecode!(path_project_root, "RootChain")
     Eth.deploy_contract(addr, bytecode, [], [], opts)
+  end
+
+  def init(contract \\ nil, opts \\ []) do
+    defaults = @tx_defaults |> Keyword.put(:gas, 1_000_000)
+    opts = defaults |> Keyword.merge(opts)
+
+    contract = contract || from_hex(Application.get_env(:omg_eth, :contract_addr))
+    {:ok, [from | _]} = Ethereumex.HttpClient.eth_accounts()
+
+    Eth.contract_transact(from_hex(from), contract, "init()", [], opts)
   end
 
   ########################

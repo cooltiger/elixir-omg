@@ -41,7 +41,7 @@ defmodule OMG.Eth.MixProject do
       {
         :plasma_contracts,
         git: "https://github.com/pdobacz/plasma-contracts",
-        branch: "finalization_challenge_events",
+        branch: "elixir_omg_morevp_compat",
         sparse: "contracts/",
         compile: contracts_compile(),
         app: false,
