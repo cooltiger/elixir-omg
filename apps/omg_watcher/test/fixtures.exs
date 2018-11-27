@@ -64,7 +64,7 @@ defmodule OMG.Watcher.Fixtures do
 
     child_chain_mix_cmd =
       "mix run --no-start --no-halt --config #{config_file_path} -e " <>
-        "'{:ok, _} = Application.ensure_all_started(:omg_api)' " <> "2>&1"
+        "'{:ok, _} = Application.ensure_all_started(:omg_rpc)' " <> "2>&1"
 
     Logger.debug(fn -> "Starting child_chain" end)
 

@@ -22,8 +22,7 @@ defmodule OMG.Watcher.Integration.InvalidExitTest do
 
   alias OMG.API
   alias OMG.Eth
-  # FIXME: http-client
-  alias OMG.JSONRPC.Client
+  alias OMG.Watcher.ChildChainClient
   alias OMG.Watcher.Eventer.Event
   alias OMG.Watcher.Integration.TestHelper, as: IntegrationTest
   alias OMG.Watcher.Web.Channel
@@ -43,10 +42,10 @@ defmodule OMG.Watcher.Integration.InvalidExitTest do
     {:ok, _, _socket} = subscribe_and_join(socket(), Channel.Byzantine, "byzantine")
 
     tx = API.TestHelper.create_encoded([{deposit_blknum, 0, 0, alice}], @eth, [{alice, 10}])
-    {:ok, %{blknum: deposit_blknum}} = Client.call(:submit, %{transaction: tx})
+    {:ok, %{blknum: deposit_blknum}} = ChildChainClient.submit(tx)
 
     tx = API.TestHelper.create_encoded([{deposit_blknum, 0, 0, alice}], @eth, [{alice, 10}])
-    {:ok, %{blknum: tx_blknum, tx_hash: _tx_hash}} = Client.call(:submit, %{transaction: tx})
+    {:ok, %{blknum: tx_blknum, tx_hash: _tx_hash}} = ChildChainClient.submit(tx)
 
     IntegrationTest.wait_for_block_fetch(tx_blknum, @timeout)
 
@@ -71,7 +70,7 @@ defmodule OMG.Watcher.Integration.InvalidExitTest do
     {eth_height, ""} = Integer.parse(eth_height, 16)
 
     invalid_exit_event =
-      Client.encode(%Event.InvalidExit{
+      Poison.encode(%Event.InvalidExit{
         amount: 10,
         currency: @eth,
         owner: alice.addr,
@@ -90,7 +89,7 @@ defmodule OMG.Watcher.Integration.InvalidExitTest do
 
     # TODO remove this tx , use directly deposit_blknum to get_exit_data
     tx = API.TestHelper.create_encoded([{deposit_blknum, 0, 0, alice}], @eth, [{alice, 10}])
-    {:ok, %{blknum: exit_blknum}} = Client.call(:submit, %{transaction: tx})
+    {:ok, %{blknum: exit_blknum}} = ChildChainClient.submit(tx)
 
     # Here we calcualted bad_block_number by adding `exit_blknum` and `margin_slow_validator` / 2
     # to have guarantee that bad_block_number will be after margin of slow validator(m_sv)
@@ -138,7 +137,7 @@ defmodule OMG.Watcher.Integration.InvalidExitTest do
     IntegrationTest.wait_for_block_fetch(bad_block_number + 1, @timeout)
 
     invalid_exit_event =
-      Client.encode(%Event.InvalidExit{
+      Poison.encode(%Event.InvalidExit{
         amount: 10,
         currency: @eth,
         owner: alice.addr,

@@ -24,8 +24,7 @@ defmodule OMG.Watcher.Integration.ChallengeExitTest do
   alias OMG.API.Utxo
   require Utxo
   alias OMG.Eth
-  # FIXME: http-client
-  alias OMG.JSONRPC.Client
+  alias OMG.Watcher.ChildChainClient
   alias OMG.Watcher.Integration.TestHelper, as: IntegrationTest
   alias OMG.Watcher.TestHelper, as: Test
   alias OMG.Watcher.Web.Serializer.Response
@@ -42,12 +41,12 @@ defmodule OMG.Watcher.Integration.ChallengeExitTest do
     #       way, so the integration is tested with the eth test
 
     tx = API.TestHelper.create_encoded([{deposit_blknum, 0, 0, alice}], @eth, [{alice, 10}])
-    {:ok, %{blknum: exiting_utxo_block_nr}} = Client.call(:submit, %{transaction: tx})
+    {:ok, %{blknum: exiting_utxo_block_nr}} = ChildChainClient.submit(tx)
 
     IntegrationTest.wait_for_block_fetch(exiting_utxo_block_nr, @timeout)
 
     tx2 = API.TestHelper.create_encoded([{exiting_utxo_block_nr, 0, 0, alice}], @eth, [{alice, 10}])
-    {:ok, %{blknum: double_spend_block_nr}} = Client.call(:submit, %{transaction: tx2})
+    {:ok, %{blknum: double_spend_block_nr}} = ChildChainClient.submit(tx2)
 
     IntegrationTest.wait_for_block_fetch(double_spend_block_nr, @timeout)
 
